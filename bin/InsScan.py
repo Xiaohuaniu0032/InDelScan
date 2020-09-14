@@ -29,6 +29,10 @@ class Options:
         else:
             self.parser.error('outdir not specified')
 
+        if args.region:
+            self.region = args.region
+        else:
+            self.region = ""
 
 cigar_value = ['M','I','D','N','S','H','P','=','X']
 
@@ -68,11 +72,6 @@ def main():
         flags = read.flag
         cigar_string = read.cigarstring
         cigar_tuple = read.cigartuples
-        
-        '''
-        * return an aligned read
-        * bwa mem's -M will trans supplemantary align into secondary. sup/secondary read's CIGAR will contain soft-clip or hard-clip info, these reads will be used to infer SV.
-        '''
 
         # strand
         if read.is_reverse:
@@ -111,11 +110,30 @@ def main():
         if s_num == 0 and ins_num == 0:
             continue
 
-        break_point = infer_breakpoint(read)
+        
+        '''
+        * return an aligned read
+        * bwa mem's -M will trans supplemantary align into secondary. sup/secondary read's CIGAR will contain soft-clip or hard-clip info, these reads will be used to infer SV.
+        '''
 
-        val = seqname + '\t' + str(chrom) + '\t' + str(left_aln_pos) + '\t' + cigar_string + '\t' + str(break_point[0]) + '\t' + str(break_point[1]) + '\t' + seq + '\t' + str(mapq) + '\t' + str(flags) + '\t' + strand + '\t' + r1r2
+        if options.region:
+            target_reg = options.region
+            target_chr = target_reg.split('-')[0]
+            target_pos = target_reg.split('-')[1].split('-')
+            target_start = int(target_pos[0])
+            target_end = int(target_pos)[1]
 
-        of.write(val+'\n')
+            if str(chrom) == str(target_chr) and left_aln_pos >= target_start and left_aln_pos <= target_end:
+                break_point = infer_breakpoint(read)
+
+                val = seqname + '\t' + str(chrom) + '\t' + str(left_aln_pos) + '\t' + cigar_string + '\t' + str(break_point[0]) + '\t' + str(break_point[1]) + '\t' + seq + '\t' + str(mapq) + '\t' + str(flags) + '\t' + strand + '\t' + r1r2
+                of.write(val+'\n')
+        else:        
+            break_point = infer_breakpoint(read)
+
+            val = seqname + '\t' + str(chrom) + '\t' + str(left_aln_pos) + '\t' + cigar_string + '\t' + str(break_point[0]) + '\t' + str(break_point[1]) + '\t' + seq + '\t' + str(mapq) + '\t' + str(flags) + '\t' + strand + '\t' + r1r2
+
+            of.write(val+'\n')
     of.close()
 
 def infer_breakpoint(readAlignedSegment):
