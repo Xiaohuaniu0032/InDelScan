@@ -51,11 +51,11 @@ def main():
         if read.mapping_quality < 20:
             continue
 
-        print(read)
-        print(read.reference_name)
-        print(read.reference_start)
-        print(read.cigarstring)
-        print(read.cigartuples)
+        #print(read)
+        #print(read.reference_name)
+        #print(read.reference_start)
+        #print(read.cigarstring)
+        #print(read.cigartuples)
         #print(read.query_alignment_end)
         #print(read.query_alignment_length)
         #print(read.get_cigar_stats())
@@ -118,10 +118,10 @@ def main():
 
         if options.region:
             target_reg = options.region
-            target_chr = target_reg.split('-')[0]
-            target_pos = target_reg.split('-')[1].split('-')
+            target_chr = target_reg.split(':')[0]
+            target_pos = target_reg.split(':')[1].split('-')
             target_start = int(target_pos[0])
-            target_end = int(target_pos)[1]
+            target_end = int(target_pos[1])
 
             if str(chrom) == str(target_chr) and left_aln_pos >= target_start and left_aln_pos <= target_end:
                 break_point = infer_breakpoint(read)
